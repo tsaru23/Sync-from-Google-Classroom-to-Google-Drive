@@ -1,0 +1,13 @@
+# Node modules
+node_modules/
+
+# clasp credentials (DO NOT commit)
+.clasprc.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
