@@ -72,7 +72,7 @@ Google Classroom 上に投稿される講義資料（PDF、スライド、ドキ
 導入は非常に簡単です。GASの知識がなくても、10分程度でセットアップが完了します。
 詳しい導入手順については、以下のセットアップガイドをご参照ください。
 
-👉 **[セットアップガイド (SETUP_GUIDE_ja.md) を読む](./SETUP_GUIDE_ja.md)**
+👉 **[セットアップガイド (SETUP_GUIDE.md) を読む](./SETUP_GUIDE.md#japanese-setup-guide)**
 
 ## 📁 作成されるフォルダ構成イメージ
 
