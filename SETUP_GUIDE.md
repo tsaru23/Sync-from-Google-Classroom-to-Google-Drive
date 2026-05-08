@@ -3,7 +3,7 @@
 This script runs entirely on **Google Apps Script (GAS)** and does not depend on your PC being turned on or connected to the internet.
 It executes fully automatically on Google's servers.
 
-[日本語のセットアップガイドはこちら (Japanese Setup Guide)](./SETUP_GUIDE_ja.md)
+👉 [日本語のセットアップガイドはこちら (Japanese Setup Guide)](#japanese-setup-guide)
 
 ---
 
@@ -146,7 +146,7 @@ Since NotebookLM doesn't have an official API, you can use this semi-automated w
 
 ## 📁 Generated Folder Structure
 
-```
+```text
 Google Drive (Organization Account)
 └── 📚 Classroom Materials/
     ├── Linear Algebra/
@@ -179,3 +179,192 @@ Google Drive (Organization Account)
 - **Log Check**: Open the "📋 Classroom Sync Log" spreadsheet in Google Drive.
 - **Execution History**: Check the "Execution History" tab in the spreadsheet.
 - **Trigger Management**: Check/edit via "Triggers" on script.google.com.
+
+---
+
+<a id="japanese-setup-guide"></a>
+# 🚀 Google Classroom 講義資料 自動仕分けシステム — セットアップガイド (日本語)
+
+このスクリプトは **Google Apps Script** 上で動作し、PCの電源やネット環境に一切依存しません。  
+Googleのサーバー上で完全自動実行されます。
+
+👉 [English Version](#google-classroom-material-auto-sync-system-setup-guide)
+
+---
+
+## 📋 必要なもの
+
+- 大学アカウント（`your_university_email@example.com`）でGoogleにログイン済みのブラウザ
+- 初回セットアップ時のみ、約10分の作業時間
+
+---
+
+## Step 1: Google Apps Script プロジェクトを作成
+
+1. **大学アカウント**（`your_university_email@example.com`）でGoogleにログイン
+2. ブラウザで [script.google.com](https://script.google.com) にアクセス
+3. 左上の **「新しいプロジェクト」** をクリック
+4. プロジェクト名（左上の「無題のプロジェクト」）を **「Classroom資料自動整理」** に変更
+
+---
+
+## Step 2: Google Classroom API を有効化
+
+1. 左サイドバーの **「サービス」** の横にある **「+」** をクリック
+2. リストから **「Google Classroom API」** を探して選択
+3. **「追加」** をクリック
+
+> ⚠️ もし「Google Classroom API」が表示されない場合、大学のGoogle Workspace管理者がAPIの利用を制限している可能性があります。その場合はIT部門に問い合わせてください。
+
+---
+
+## Step 3: スクリプトファイルを作成・貼り付け
+
+GASエディタにはデフォルトで `コード.gs` というファイルがあります。  
+以下の手順で5つのファイルを作成してください。
+
+### 3-1. `Code.gs`（メインスクリプト）
+1. デフォルトの `コード.gs` のファイル名を **`Code`** に変更（ファイル名の右の「⋮」→「名前を変更」）
+2. 中身を全て削除して、`Code.gs` ファイルの内容を貼り付け
+
+### 3-2. 残りのファイルを追加
+左サイドバーの「ファイル」横の **「+」→「スクリプト」** で以下を作成：
+
+| ファイル名 | 説明 |
+|-----------|------|
+| `Config` | 設定管理（`Config.gs` の内容を貼り付け） |
+| `ClassroomFetcher` | Classroom API操作 |
+| `DriveManager` | Google Drive操作 |
+| `Logger` | ログ管理 |
+| `Notifier` | メール通知 |
+
+> 💡 GASでは `.gs` 拡張子は自動で付与されるため、ファイル名だけ入力してください。
+
+---
+
+## Step 4: 設定をカスタマイズ
+
+`Config.gs` を開いて、必要に応じて編集、および個人アカウントの設定を行います。
+
+### 📧 個人メールアドレスの設定（必須）
+本システムでは大学アカウントから個人アカウントへ資料フォルダを自動共有します。
+セキュリティ上、公開リポジトリのソースコード内に直接実アドレスを記述するのを避け、**PropertiesService**（GASの内蔵キーバリューストア）を利用して安全に保存します。
+
+1. `Config.gs` 内の `PERSONAL_EMAIL_DEFAULT` は `'YOUR_EMAIL@example.com'`（デフォルトのプレースホルダー）のままにしておきます。
+2. 安全にメールアドレスを設定するために、一時的に以下の設定用関数を `Config.gs` の末尾に貼り付けます：
+   ```javascript
+   function runOnceToSetEmail() {
+     setPersonalEmail("your_personal_email@gmail.com"); // ← あなたの実アドレスを記入
+   }
+   ```
+3. エディタ上部のドロップダウンで **`runOnceToSetEmail`** を選択し、**「実行」** ボタン ▶ をクリックします（認証を求められた場合は許可します）。
+4. 設定完了のログ（`個人メールアドレスを安全に更新しました: ...`）が出たら、貼り付けた `runOnceToSetEmail` 関数はコードから**削除**してください。
+
+### ⚙️ その他の設定（任意）
+`Config.gs` を開いて、必要に応じて以下を編集します：
+
+```javascript
+// 新しい資料が見つかったときにメール通知するか
+NOTIFY_ON_NEW: true,
+```
+
+### 🗺️ 科目名マッピング（任意）
+Classroomのコース名をわかりやすいフォルダ名に変換したい場合：
+
+```javascript
+const COURSE_NAME_MAP = {
+  '線形代数': '数学/線形代数学',
+  '英語': '語学/英語',
+};
+```
+
+---
+
+## Step 5: 初回実行と認証
+
+1. エディタ上部のドロップダウンで **`listAllCourses`** を選択
+2. **「実行」ボタン** ▶ をクリック
+3. **認証ダイアログ**が表示されます：
+   - 「権限を確認」をクリック
+   - 大学アカウントを選択
+   - 「詳細を表示」→「Classroom資料自動整理（安全ではないページ）に移動」
+   - 「許可」をクリック
+4. 下部の **実行ログ** にコース一覧が表示されることを確認
+
+> 💡 「安全ではないページ」という警告は、自作スクリプトではGoogleの審査を受けていないためです。自分のスクリプトなので問題ありません。
+
+---
+
+## Step 6: テスト実行
+
+1. ドロップダウンで **`testSyncFirstCourse`** を選択して実行
+2. 最初のコースの資料一覧がログに表示されることを確認
+3. 問題なければ **`syncClassroomMaterials`** を実行して全コースを同期
+
+---
+
+## Step 7: 自動トリガーを設定
+
+### 方法A: スクリプトから自動設定（推奨）
+1. ドロップダウンで **`setupTriggers`** を選択して実行
+2. 毎日 8:00 と 20:00 に自動実行されるトリガーが作成されます
+
+### 方法B: 手動でトリガー設定
+1. 左サイドバーの **「トリガー」**（⏰アイコン）をクリック
+2. 右下の **「+ トリガーを追加」** をクリック
+3. 以下を設定：
+   - 実行する関数: `syncClassroomMaterials`
+   - イベントソース: **時間主導型**
+   - タイプ: **日付ベースのタイマー**
+   - 時刻: 好みの時間帯を選択
+4. **「保存」** をクリック
+
+---
+
+## Step 8: NotebookLM との連携
+
+NotebookLMには公式APIがないため、以下の半自動ワークフローで連携します。
+
+1. 個人アカウント（`your_personal_email@gmail.com`）で [NotebookLM](https://notebooklm.google.com) にアクセス
+2. 科目ごとにノートブックを作成
+3. **「ソースを追加」→「Google Drive」** を選択
+4. 共有された「📚 Classroom講義資料」フォルダ内の科目フォルダからファイルを選択
+5. 新しい資料が追加されたときはメール通知が届くので、同じ手順でソースを更新
+
+---
+
+## 📁 作成されるフォルダ構造
+
+```text
+Google Drive（大学アカウント）
+└── 📚 Classroom講義資料/
+    ├── 線形代数学/
+    │   ├── 第1回_講義スライド.pdf
+    │   ├── 演習問題1.pdf
+    │   └── ...
+    ├── プログラミング基礎/
+    │   ├── 第1回_資料.pdf
+    │   └── ...
+    └── 英語コミュニケーション/
+        └── ...
+```
+
+---
+
+## ❓ トラブルシューティング
+
+| 問題 | 解決策 |
+|------|--------|
+| 「Google Classroom API」が見つからない | 大学のIT管理者にAPIの利用許可を依頼 |
+| 認証エラーが発生する | script.google.com に大学アカウントでログインし直す |
+| コースが表示されない | Classroomでアクティブなコースがあるか確認 |
+| ファイルがコピーされない | `Config.gs`の`TARGET_MIME_TYPES`を確認 |
+| 実行時間超過エラー | `MAX_COURSES_PER_RUN`の値を小さくする |
+
+---
+
+## 🔧 メンテナンス
+
+- **ログ確認**: Google Driveで「📋 Classroom同期ログ」スプレッドシートを開く
+- **実行履歴**: スプレッドシートの「実行履歴」シートを確認
+- **トリガー管理**: script.google.com →「トリガー」で確認・変更
