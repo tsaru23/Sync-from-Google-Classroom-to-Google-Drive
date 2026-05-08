@@ -3,7 +3,7 @@ node_modules/
 
 # clasp credentials (DO NOT commit)
 .clasprc.json
-.cladp.json
+.clasp.json
 
 # OS files
 .DS_Store
