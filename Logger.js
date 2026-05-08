@@ -77,19 +77,32 @@ function recordRunHistory(courseCount, newCount, skipCount, errorCount) {
 }
 
 // === コンソールログヘルパー ===
-function logDebug(msg) { if (CONFIG.DEBUG) console.log('[DEBUG] ' + msg); }
-function logInfo(msg) { console.log('[INFO] ' + msg); }
-function logWarning(msg) { console.warn('[WARN] ' + msg); }
-function logError(msg) { console.error('[ERROR] ' + msg); }
+function logDebug(msg) { if (CONFIG.DEBUG) console.log('[DEBUG] ' + sanitizeErrorMessage(msg)); }
+function logInfo(msg) { console.log('[INFO] ' + sanitizeErrorMessage(msg)); }
+function logWarning(msg) { console.warn('[WARN] ' + sanitizeErrorMessage(msg)); }
+function logError(msg) { console.error('[ERROR] ' + sanitizeErrorMessage(msg)); }
 
+/**
+ * ログ・エラーメッセージ内の機密情報（メールアドレス、トークン、認証情報等）を安全にマスクする
+ * @param {string|Error} error - エラーオブジェクトまたはメッセージ文字列
+ * @returns {string} サニタイズされた文字列
+ */
 function sanitizeErrorMessage(error) {
   if (!error) return '不明なエラー';
+  
   var msg = typeof error === 'object' ? (error.message || error.toString()) : String(error);
   
-  // メールアドレスをマスク化 (test@example.com -> ***@***.***)
-  msg = msg.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '***@***.***');
-  // APIトークン・スクリプトID等をマスク化
-  msg = msg.replace(/\b(ya29\.[a-zA-Z0-9_\-]+)\b/gi, '[OAUTH_TOKEN]');
-  msg = msg.replace(/(key|secret|token|password|scriptId|folderId)=([a-zA-Z0-9_\-\.\~]+)/gi, '$1=[REDACTED]');
+  // 1. メールアドレスのマスク化 (例: test@gmail.com -> ***@***.***)
+  var emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  msg = msg.replace(emailRegex, '***@***.***');
+  
+  // 2. Google API トークン・シークレット等のマスク化（ya29で始まるOAuthトークンなど）
+  var tokenRegex = /\b(ya29\.[a-zA-Z0-9_\-]+)\b/gi;
+  msg = msg.replace(tokenRegex, '[OAUTH_TOKEN]');
+  
+  // 3. APIキー、パスワード、スクリプトID、フォルダID風のパラメータのマスク化
+  var keyParamRegex = /(key|secret|token|password|credential|scriptId|folderId)=([a-zA-Z0-9_\-\.\~]+)/gi;
+  msg = msg.replace(keyParamRegex, '$1=[REDACTED]');
+  
   return msg;
 }

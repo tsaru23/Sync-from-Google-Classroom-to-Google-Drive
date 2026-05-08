@@ -57,14 +57,24 @@ Click **"+" → "Script"** next to "Files" on the left sidebar to create the fol
 
 ---
 
-## Step 4: Customize Settings (Optional)
+## Step 4: Configure Personal Email Address (Security Best Practice)
 
+To protect your personal email address from being exposed in public code, this system retrieves it from the Google Apps Script **Script Properties (PropertiesService)**. 
+
+### ⚙️ How to safely set your email address:
+1. In the GAS editor, open `Code.gs` and temporarily paste the following helper function at the bottom:
+   ```javascript
+   function runOnceToSetEmail() {
+     setPersonalEmail("your_personal_email@gmail.com"); // ← Enter your real email address here
+   }
+   ```
+2. Select **`runOnceToSetEmail`** from the dropdown menu at the top of the editor and click the **"Run"** button ▶.
+3. Once the execution completes and you see the log `Personal email address updated: ...`, **delete** the temporary `runOnceToSetEmail` function from your code.
+
+### ⚙️ Other Settings (Optional)
 Open `Config.gs` and edit the following as needed:
 
 ```javascript
-// Personal email address to share with
-PERSONAL_EMAIL: 'YOUR_EMAIL@example.com',
-
 // Whether to receive email notifications
 NOTIFY_ON_NEW: true,
 ```

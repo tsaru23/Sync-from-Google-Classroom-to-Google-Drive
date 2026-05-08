@@ -84,7 +84,7 @@ function getActiveCourses() {
  */
 function diagnoseClassroomAPI() {
   console.log('=== Classroom API 診断開始 ===');
-  console.log('実行アカウント: ' + Session.getActiveUser().getEmail());
+  console.log('実行アカウント: ' + sanitizeErrorMessage(Session.getActiveUser().getEmail()));
   console.log('');
   
   // テスト1: フィルタなしでコース取得

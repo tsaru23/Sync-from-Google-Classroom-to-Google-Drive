@@ -1,44 +1,44 @@
 /**
  * ============================================================
- * Config.gs — Configuration Module
+ * Config.gs — 設定管理モジュール
  * ============================================================
- * Google Classroom Material Auto-Sync System
+ * Google Classroom 講義資料 自動仕分けシステム
  * 
- * All settings are centralized in this file.
- * Manage course name mappings and filtering rules here.
+ * このファイルには全ての設定が集約されています。
+ * 科目名のマッピングやフィルタリングルールをここで管理します。
  * ============================================================
  */
 
 /**
- * Global Settings
- * Users should only edit this section.
+ * グローバル設定
+ * ユーザーはこのセクションのみ編集してください
  */
 const CONFIG = {
-  // ===== Basic Settings =====
+  // ===== 基本設定 =====
   
-  /** Root folder name on Google Drive */
-  ROOT_FOLDER_NAME: 'Classroom_Materials',
+  /** Google Drive上のルートフォルダ名 */
+  ROOT_FOLDER_NAME: 'Classroom講義資料',
   
-  /** Spreadsheet name to record processed files */
-  LOG_SPREADSHEET_NAME: 'Classroom_Sync_Log',
+  /** 処理済みファイルを記録するスプレッドシート名 */
+  LOG_SPREADSHEET_NAME: 'Classroom同期ログ',
   
-  /** Personal email address (for sharing)
-   *  Security: Set by initPersonalEmail() on first run
-   *  To change, execute setPersonalEmail('new@example.com')
+  /** 個人アカウントのメールアドレス（共有先）
+   *  セキュリティ: 初回実行時に initPersonalEmail() で設定されます
+   *  変更する場合は setPersonalEmail('new@example.com') を実行してください
    */
   PERSONAL_EMAIL_DEFAULT: 'YOUR_EMAIL@example.com',
   
-  // ===== Notification Settings =====
+  // ===== 通知設定 =====
   
-  /** Whether to send email notification when new materials are found */
+  /** 新しい資料が見つかったときにメール通知するか */
   NOTIFY_ON_NEW: true,
   
-  /** Destination for notification emails (University email) */
+  /** 通知メールの送信先（大学メール） */
   NOTIFICATION_EMAIL: Session.getActiveUser().getEmail(),
   
-  // ===== Filtering Settings =====
+  // ===== フィルタリング設定 =====
   
-  /** Target file types (MIME types) - Empty array means all types */
+  /** 対象とするファイルタイプ（MIMEタイプ） - 空配列の場合は全て対象 */
   TARGET_MIME_TYPES: [
     'application/pdf',
     'application/vnd.google-apps.document',
@@ -51,69 +51,71 @@ const CONFIG = {
     'image/jpeg',
   ],
   
-  /** Keywords of course names to exclude (partial match) */
+  /** 除外するコース名のキーワード（部分一致） */
   EXCLUDED_COURSE_KEYWORDS: [
-    // e.g., 'Test', 'Archive'
+    // 例: 'テスト', 'アーカイブ'
   ],
   
-  // ===== Sharing Settings =====
-  // Security: Only shared with specified account via addViewer() (no link sharing)
+  // ===== 共有設定 =====
+  // セキュリティ: addViewer() で指定アカウントのみに共有（リンク共有は使用しない）
   
-  // ===== Advanced Settings =====
+  // ===== 高度な設定 =====
   
-  /** Maximum number of courses to process per run (Execution time limit countermeasure) */
+  /** 1回の実行で処理するコース数の上限（実行時間制限対策） */
   MAX_COURSES_PER_RUN: 50,
   
-  /** Maximum number of materials to fetch per course */
+  /** 1コースあたりの最大取得資料数 */
   MAX_MATERIALS_PER_COURSE: 100,
   
-  /** Debug mode (Detailed log output) */
+  /** デバッグモード（詳細ログ出力） */
   DEBUG: false,
 };
 
 /**
- * Course Name Mapping
- * Google Classroom course name → Folder name on Drive
+ * 科目名マッピング
+ * Google Classroomのコース名 → Drive上のフォルダ名
  * 
- * Key: Keyword contained in Classroom course name (partial match)
- * Value: Folder name to use on Google Drive
+ * キー: Classroomコース名に含まれるキーワード（部分一致）
+ * 値: Google Drive上で使用するフォルダ名
  * 
- * If no match, the Classroom course name is used as is.
+ * マッピングに一致しない場合は、Classroomのコース名がそのまま使用されます
  * 
- * Example:
+ * 例:
  * COURSE_NAME_MAP = {
- *   'Linear Algebra': 'Math/Linear Algebra',
- *   'Calculus': 'Math/Calculus',
- *   'Programming Basics': 'CS/Programming Basics',
- *   'English Communication': 'Languages/English',
- *   'Physics Lab': 'Science/Physics Lab',
+ *   '線形代数': '数学/線形代数学',
+ *   '微分積分': '数学/微分積分学',
+ *   'プログラミング基礎': '情報/プログラミング基礎',
+ *   '英語コミュニケーション': '語学/英語',
+ *   '物理学実験': '理科/物理学実験',
  * };
  */
 const COURSE_NAME_MAP = {
-  // Add your course mappings here
-  // If not added, the Classroom course name will be used directly
+  // ここに受講科目のマッピングを追加してください
+  // 追加しなくてもClassroomのコース名がそのまま使われます
 };
 
 /**
- * Convert course name to folder name
- * @param {string} courseName - Classroom course name
- * @returns {string} Folder name
+ * コース名をフォルダ名に変換する
+ * @param {string} courseName - Classroomのコース名
+ * @returns {string} フォルダ名
  */
 function mapCourseName(courseName) {
+  // マッピングテーブルから検索（部分一致）
   for (const [keyword, folderName] of Object.entries(COURSE_NAME_MAP)) {
     if (courseName.includes(keyword)) {
       return folderName;
     }
   }
   
-  // Remove characters that cannot be used in folder names
+  // マッピングに一致しない場合、コース名をそのまま使用
+  // フォルダ名に使えない文字を除去
   return courseName.replace(/[\\\/\:\*\?\"\<\>\|]/g, '_').trim();
 }
 
 /**
- * Determine if a course should be excluded
- * @param {string} courseName - Classroom course name
- * @returns {boolean} true if excluded
+ * コースが除外対象かどうかを判定する
+ * @param {string} courseName - Classroomのコース名
+ * @returns {boolean} 除外する場合はtrue
  */
 function isExcludedCourse(courseName) {
   return CONFIG.EXCLUDED_COURSE_KEYWORDS.some(keyword => 
@@ -122,50 +124,59 @@ function isExcludedCourse(courseName) {
 }
 
 /**
- * Determine if a file is a target MIME type
- * @param {string} mimeType - File MIME type
- * @returns {boolean} true if targeted
+ * ファイルが対象MIMEタイプかどうかを判定する
+ * @param {string} mimeType - ファイルのMIMEタイプ
+ * @returns {boolean} 対象の場合はtrue
  */
 function isTargetMimeType(mimeType) {
   if (CONFIG.TARGET_MIME_TYPES.length === 0) {
-    return true; // All targeted if empty
+    return true; // 空の場合は全て対象
   }
   return CONFIG.TARGET_MIME_TYPES.includes(mimeType);
 }
 
 // ============================================================
-// Security: Email address safe management
+// セキュリティ: メールアドレスの安全管理
 // ============================================================
 
 /**
- * Get personal email address
- * Use PropertiesService if saved, else use CONFIG.PERSONAL_EMAIL_DEFAULT
- * @returns {string} Email address
+ * 個人アカウントのメールアドレスを取得する
+ * PropertiesServiceに保存されていればそちらを使用し、
+ * なければCONFIG.PERSONAL_EMAIL_DEFAULTを使用して保存する
+ * @returns {string} メールアドレス
  */
 function getPersonalEmail() {
   var props = PropertiesService.getScriptProperties();
   var email = props.getProperty('PERSONAL_EMAIL');
   
-  if (email) {
+  if (email && email !== 'YOUR_EMAIL@example.com' && email.includes('@')) {
     return email;
   }
   
-  email = CONFIG.PERSONAL_EMAIL_DEFAULT;
-  props.setProperty('PERSONAL_EMAIL', email);
-  logInfo('Personal email address set: ' + email);
-  return email;
+  // デフォルト値がプレースホルダー、または未設定の場合
+  var defaultEmail = CONFIG.PERSONAL_EMAIL_DEFAULT;
+  if (!defaultEmail || defaultEmail === 'YOUR_EMAIL@example.com') {
+    logWarning('個人メールアドレスが未設定（またはデフォルトプレースホルダー）です。自動共有はスキップされます。');
+    logWarning('解決方法: GASエディタ上で `setPersonalEmail("your_real_email@gmail.com")` を実行してください。');
+    return null;
+  }
+  
+  props.setProperty('PERSONAL_EMAIL', defaultEmail);
+  logInfo('デフォルトの個人メールアドレスをPropertiesに保存しました: ' + defaultEmail);
+  return defaultEmail;
 }
 
 /**
- * Change personal email address
- * Execute setPersonalEmail('new@example.com') in GAS editor
- * @param {string} email - New email address
+ * 個人アカウントのメールアドレスを変更する
+ * GASエディタで setPersonalEmail('new@example.com') を実行
+ * @param {string} email - 新しいメールアドレス
  */
 function setPersonalEmail(email) {
-  if (!email || !email.includes('@')) {
-    logError('Invalid email address: ' + email);
+  var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email) || email === 'YOUR_EMAIL@example.com') {
+    logError('無効なメールアドレス形式、またはプレースホルダーです: ' + email);
     return;
   }
   PropertiesService.getScriptProperties().setProperty('PERSONAL_EMAIL', email);
-  logInfo('Personal email address updated: ' + email);
+  logInfo('個人メールアドレスを安全に更新しました: ' + email);
 }

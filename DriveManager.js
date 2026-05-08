@@ -99,7 +99,14 @@ function copyFileToDrive(fileId, destinationFolder, fileName) {
     return copiedFile;
     
   } catch (error) {
-    logError(`ファイルのコピーに失敗しました: ${fileName} (ID: ${fileId}) - ${error.message}`);
+    var errMsg = error.message ? error.message : String(error);
+    var lowerMsg = errMsg.toLowerCase();
+    
+    if (lowerMsg.includes('access denied') || lowerMsg.includes('not found') || lowerMsg.includes('permission') || lowerMsg.includes('accessdenied')) {
+      logWarning(`アクセス権限がないか、ファイルが削除されているためスキップしました: ${fileName} (ID: ${fileId})`);
+    } else {
+      logError(`ファイルのコピー中にエラーが発生しました: ${fileName} (ID: ${fileId}) - ${errMsg}`);
+    }
     return null;
   }
 }
@@ -142,6 +149,10 @@ function saveLinkAsFile(url, title, destinationFolder, parentTitle) {
 function shareWithPersonalAccount(folder) {
   try {
     var personalEmail = getPersonalEmail();
+    if (!personalEmail) {
+      logDebug('個人メールアドレスが未設定のため、共有処理をスキップします: ' + folder.getName());
+      return;
+    }
     
     // 既に共有されているかチェック
     var viewers = folder.getViewers();

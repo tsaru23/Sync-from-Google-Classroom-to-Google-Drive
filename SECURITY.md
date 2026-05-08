@@ -1,21 +1,54 @@
-# Security Policy
+# セキュリティポリシー (SECURITY.md)
 
-## Supported Versions
+このリポジトリのセキュリティ状況を健全に保つためのガイドラインです。
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+## サポートされているバージョン
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+現在、以下のバージョンのみに対してセキュリティアップデートやサポートを提供しています。
 
-## Reporting a Vulnerability
+| バージョン | サポート状況 |
+| :--- | :--- |
+| v1.0.x | 🟢 サポート対象 (最新) |
+| < v1.0.0 | ❌ サポート終了 |
 
-Use this section to tell people how to report a vulnerability.
+## 脆弱性の報告方法
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+本ツールに関するセキュリティ上の問題や脆弱性を発見した場合は、GitHub Issuesなどの一般公開されたスレッドではなく、以下の方法で個別かつ安全にご報告ください。
+
+- **連絡先メールアドレス**: `security-report@example.com`（プレースホルダー。公開前に必要に応じて変更してください）
+- 報告時には、発見した問題の再現手順や影響度（影響範囲）についての詳細を記載していただけますと幸いです。
+- 受信後、速やかに内容を確認し、修正・対応プロセスを開始します。
+
+---
+
+## 🔒 開発・運用セキュリティガイドライン
+
+リポジトリおよび公開システムの安全性を確保するため、運用者（開発者）は以下の設定・ベストプラクティスを遵守してください。
+
+### 1. GitHub のブランチ保護ルール (Branch Protection Rules)
+
+予期しないプッシュによる本番コードの破損や、誤ったセキュリティ情報の混入を防ぐため、`main` ブランチに対して以下の保護ルールを有効にすることを強く推奨します。
+
+#### 設定手順:
+1. 対象の GitHub リポジトリを開き、**「Settings」** タブをクリックします。
+2. 左メニューの **「Branches」** をクリックします。
+3. **「Add branch protection rule」**（または `main` ブランチに対する既存ルールの編集）をクリックします。
+4. **Branch name pattern** に `main` と入力します。
+5. 以下の項目にチェックを入れます：
+   - **Require a pull request before merging (マージ前にプルリクエストを必須にする)**:
+     - 開発コードを一度 `feature` ブランチ等にプッシュし、PR を通じて変更差分を確認した上でマージするようにします。
+     - 必要に応じて **Require approvals (レビュー承認の必須化)**（1人以上）を有効にします。
+   - **Require status checks to pass before merging**: テストやビルドチェックなどのCIを導入している場合に有効です。
+   - **Do not allow bypassing the above settings**: 管理者であっても強制プッシュなどの例外的な操作を行えないように制限します。
+6. **「Create」**（または **「Save changes」**）をクリックします。
+
+### 2. 秘密情報（クレデンシャル）の取り扱い
+
+Google Apps Script の認証トークンやプロジェクト固有の設定情報を安全に扱うため、以下のファイルが絶対に Git 管理下に含まれないことを確認してください。
+
+- **`.clasp.json`**:
+  - Google Apps Script の `scriptId` を含みます。`.gitignore` に追記されており、追跡対象から外されています。
+- **`.clasprc.json`**:
+  - clasp CLI が利用する Google アカウントへの認証トークンを含む、極めて機密性の高いファイルです。すでに `.gitignore` に含まれていますが、絶対にパブリックに公開しないでください。
+- **個人メールアドレス**:
+  - 共有先アドレス（`PERSONAL_EMAIL`）などのプライベートな情報はコードにハードコードせず、GASの **`PropertiesService`** に動的保存して利用してください（詳細は `SETUP_GUIDE.md` を参照）。
