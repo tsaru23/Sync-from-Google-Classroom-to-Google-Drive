@@ -81,3 +81,15 @@ function logDebug(msg) { if (CONFIG.DEBUG) console.log('[DEBUG] ' + msg); }
 function logInfo(msg) { console.log('[INFO] ' + msg); }
 function logWarning(msg) { console.warn('[WARN] ' + msg); }
 function logError(msg) { console.error('[ERROR] ' + msg); }
+
+function sanitizeErrorMessage(error) {
+  if (!error) return '不明なエラー';
+  var msg = typeof error === 'object' ? (error.message || error.toString()) : String(error);
+  
+  // メールアドレスをマスク化 (test@example.com -> ***@***.***)
+  msg = msg.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '***@***.***');
+  // APIトークン・スクリプトID等をマスク化
+  msg = msg.replace(/\b(ya29\.[a-zA-Z0-9_\-]+)\b/gi, '[OAUTH_TOKEN]');
+  msg = msg.replace(/(key|secret|token|password|scriptId|folderId)=([a-zA-Z0-9_\-\.\~]+)/gi, '$1=[REDACTED]');
+  return msg;
+}
