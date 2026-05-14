@@ -1,4 +1,4 @@
-# 🔄 Sync From Google Classroom to Google Drive
+# 🔄 Sync From Google Classroom To Google Drive
 
 A Google Apps Script (GAS) tool that automatically detects lecture materials (PDFs, slides, documents, etc.) posted on Google Classroom and organizes them into specified folders in Google Drive by course.
 
