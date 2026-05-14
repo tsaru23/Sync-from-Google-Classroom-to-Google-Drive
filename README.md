@@ -54,7 +54,7 @@ Bug reports and pull requests for new features are welcome!
 ---
 
 <a id="japanese-readme"></a>
-# 🔄 Sync From Google Classroom to Google Drive (日本語)
+# 🔄 Sync From Google Classroom To Google Drive (日本語)
 
 Google Classroom 上に投稿される講義資料（PDF、スライド、ドキュメント等）を自動で検知し、指定した Google Drive のフォルダへ科目ごとに自動で整理・保存する Google Apps Script (GAS) ツールです。
 
