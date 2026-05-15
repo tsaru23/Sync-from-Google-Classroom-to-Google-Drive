@@ -8,7 +8,8 @@ A Google Apps Script (GAS) tool that automatically detects lecture materials (PD
 
 - **Fully Automated**: Runs automatically every day on Google's servers without needing your PC to be on.
 - **Auto-Sorting by Course**: Automatically creates folders and organizes files in Drive based on Classroom course names.
-- **New Material Notifications**: Sends an email notification to a specified address when new materials are added.
+- **New Material Notifications**: Sends an email notification when new materials are added.
+- **Assignment Deadline Notifications**: Notifies you via email (7 days, 3 days, 1 day before, and today) for unsubmitted assignments.
 - **Great with NotebookLM**: Perfect for creating AI notebooks per course by specifying the destination folders as sources in NotebookLM.
 
 ## 🚀 Getting Started
@@ -46,6 +47,7 @@ You can customize the following by editing `Config.js`:
 - Exclude specific courses
 - Specify file formats (MIME types) to save
 - Map course names to custom folder names
+- Adjust deadline notification timing (e.g., 7, 3, 1, 0 days)
 
 ## 🤝 Contributing
 
@@ -64,7 +66,8 @@ Google Classroom 上に投稿される講義資料（PDF、スライド、ドキ
 
 - **完全自動化**: PCを立ち上げていなくても、Googleのサーバー（GAS）上で毎日自動で実行されます。
 - **科目ごとの自動振り分け**: クラスルームのコース名に基づいて、Drive内に自動でフォルダを作成し整理します。
-- **新着資料の通知**: 新しい講義資料が追加された際に、指定のメールアドレスへ通知を送ることができます。
+- **新着資料の通知**: 新しい講義資料が追加された際にメールで通知します。
+- **課題の提出期限通知**: 未提出の課題がある場合、期限の7日前、3日前、1日前、当日にメールでリマインドします。
 - **NotebookLMとの相性抜群**: 保存先のフォルダを NotebookLM のソースとして指定することで、簡単に講義ごとのAIノートブックを作成できます。
 
 ## 🚀 使い方・セットアップ (Getting Started)
@@ -102,6 +105,7 @@ Google Drive
 - 特定のコースの除外
 - 保存するファイル形式（MIMEタイプ）の指定
 - コース名からフォルダ名への自由なマッピング
+- 提出期限通知のタイミング（7日前、3日前など）の調整
 
 ## 🤝 貢献 (Contributing)
 
