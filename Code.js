@@ -110,6 +110,27 @@ function syncClassroomMaterials() {
     // 5. 通知メール送信
     sendNotification(newFiles, stats);
 
+    // 6. 期限通知の処理
+    if (CONFIG.NOTIFY_DEADLINE) {
+      logInfo('期限通知のチェックを開始します...');
+      const deadlineAssignments = [];
+      for (const course of courses) {
+        const unsubmitted = getUnsubmittedAssignments(course);
+        for (const item of unsubmitted) {
+          if (!isNotificationSent(item.id, item.daysRemaining)) {
+            deadlineAssignments.push(item);
+          }
+        }
+      }
+      
+      if (deadlineAssignments.length > 0) {
+        sendDeadlineNotification(deadlineAssignments);
+        for (const item of deadlineAssignments) {
+          recordNotificationSent(item, item.daysRemaining);
+        }
+      }
+    }
+
     logInfo(`===== 同期完了: 新規=${stats.newCount}, スキップ=${stats.skipCount}, エラー=${stats.errorCount} =====`);
 
   } catch (error) {

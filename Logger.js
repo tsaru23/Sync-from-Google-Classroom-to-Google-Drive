@@ -9,12 +9,17 @@
 let _logSpreadsheet = null;
 let _processedSheet = null;
 let _historySheet = null;
+let _notificationSheet = null;
 
 function getLogSpreadsheet() {
   if (_logSpreadsheet) return _logSpreadsheet;
   const files = DriveApp.getFilesByName(CONFIG.LOG_SPREADSHEET_NAME);
   if (files.hasNext()) {
     _logSpreadsheet = SpreadsheetApp.open(files.next());
+    // 必要に応じて新しいシートを初期化
+    if (!_logSpreadsheet.getSheetByName('通知履歴')) {
+      initializeNotificationSheet(_logSpreadsheet);
+    }
   } else {
     _logSpreadsheet = SpreadsheetApp.create(CONFIG.LOG_SPREADSHEET_NAME);
     initializeLogSheets(_logSpreadsheet);
@@ -37,6 +42,17 @@ function initializeLogSheets(ss) {
   ]]);
   h.getRange('A1:E1').setFontWeight('bold').setBackground('#34a853').setFontColor('#fff');
   h.setFrozenRows(1);
+
+  initializeNotificationSheet(ss);
+}
+
+function initializeNotificationSheet(ss) {
+  let n = ss.insertSheet('通知履歴');
+  n.getRange('A1:E1').setValues([[
+    '課題ID', '課題名', '通知タイミング', '通知日時', 'コース名'
+  ]]);
+  n.getRange('A1:E1').setFontWeight('bold').setBackground('#f4b400').setFontColor('#fff');
+  n.setFrozenRows(1);
 }
 
 function getProcessedSheet() {
@@ -51,6 +67,12 @@ function getHistorySheet() {
   return _historySheet;
 }
 
+function getNotificationSheet() {
+  if (_notificationSheet) return _notificationSheet;
+  _notificationSheet = getLogSpreadsheet().getSheetByName('通知履歴');
+  return _notificationSheet;
+}
+
 function isFileProcessed(fileId) {
   const data = getProcessedSheet().getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
@@ -63,6 +85,23 @@ function isLinkProcessed(url) {
   return isFileProcessed(url);
 }
 
+/**
+ * 期限通知が送信済みかどうかを確認する
+ * @param {string} courseWorkId - 課題ID
+ * @param {number} milestone - 通知タイミング（3, 1, 0など）
+ * @returns {boolean} 送信済みの場合はtrue
+ */
+function isNotificationSent(courseWorkId, milestone) {
+  const data = getNotificationSheet().getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    // 課題IDとタイミングの両方が一致する場合のみ送信済みとする
+    if (data[i][0] === courseWorkId && parseInt(data[i][2]) === milestone) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function recordProcessedFile(id, fileName, courseName, type, folderName, status) {
   getProcessedSheet().appendRow([
     id, fileName, courseName, type, folderName,
@@ -73,6 +112,18 @@ function recordProcessedFile(id, fileName, courseName, type, folderName, status)
 function recordRunHistory(courseCount, newCount, skipCount, errorCount) {
   getHistorySheet().appendRow([
     new Date().toLocaleString('ja-JP'), courseCount, newCount, skipCount, errorCount,
+  ]);
+}
+
+/**
+ * 通知送信を記録する
+ * @param {Object} assignment - 課題情報
+ * @param {number} milestone - 通知タイミング
+ */
+function recordNotificationSent(assignment, milestone) {
+  getNotificationSheet().appendRow([
+    assignment.id, assignment.title, milestone,
+    new Date().toLocaleString('ja-JP'), assignment.courseName
   ]);
 }
 

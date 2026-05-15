@@ -33,6 +33,11 @@ const CONFIG = {
   /** 新しい資料が見つかったときにメール通知するか */
   NOTIFY_ON_NEW: true,
   
+  /** 期限通知設定 */
+  NOTIFY_DEADLINE: true,
+  /** 通知する日数（7日前、3日前、1日前、当日） */
+  DEADLINE_DAYS_TO_NOTIFY: [7, 3, 1, 0],
+  
   /** 通知メールの送信先（大学メール） */
   NOTIFICATION_EMAIL: Session.getActiveUser().getEmail(),
   

@@ -278,3 +278,52 @@ function getAllCourseAttachments(courseId) {
   
   return all;
 }
+
+/**
+ * 指定コースの未提出課題を取得し、期限が近いものを抽出する
+ * @param {Object} course - コース情報
+ * @returns {Array<Object>} 通知対象の課題リスト
+ */
+function getUnsubmittedAssignments(course) {
+  const unsubmitted = [];
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // 日付のみ比較
+
+  try {
+    const response = Classroom.Courses.CourseWork.list(course.id);
+    if (!response.courseWork) return [];
+
+    for (const work of response.courseWork) {
+      // 期限が設定されていない場合はスキップ
+      if (!work.dueDate) continue;
+
+      // 提出状況を確認
+      const submissionResponse = Classroom.Courses.CourseWork.StudentSubmissions.list(course.id, work.id, { userId: 'me' });
+      const submissions = submissionResponse.studentSubmissions || [];
+      const isSubmitted = submissions.some(s => s.state === 'TURNED_IN' || s.state === 'RETURNED');
+
+      if (!isSubmitted) {
+        // 期限日の計算
+        const dueDate = new Date(work.dueDate.year, work.dueDate.month - 1, work.dueDate.day);
+        const diffTime = dueDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // 通知対象の日数かどうかチェック
+        if (CONFIG.DEADLINE_DAYS_TO_NOTIFY.includes(diffDays)) {
+          unsubmitted.push({
+            courseName: course.name,
+            id: work.id,
+            title: work.title,
+            dueDate: `${work.dueDate.year}/${work.dueDate.month}/${work.dueDate.day}`,
+            daysRemaining: diffDays,
+            alternateLink: work.alternateLink
+          });
+        }
+      }
+    }
+  } catch (error) {
+    logWarning(`コース ${course.name} の課題期限チェックでエラー: ${error.message}`);
+  }
+
+  return unsubmitted;
+}

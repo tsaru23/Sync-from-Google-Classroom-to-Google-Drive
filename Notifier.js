@@ -58,3 +58,41 @@ function sendNotification(newFiles, stats) {
     logError('通知メール送信エラー: ' + error.message);
   }
 }
+
+/**
+ * 期限間近の課題を通知する
+ * @param {Array<Object>} assignments - 通知対象の課題リスト
+ */
+function sendDeadlineNotification(assignments) {
+  if (assignments.length === 0) return;
+
+  const subject = `⚠️ 期限切迫！未提出の課題があります（${assignments.length}件）`;
+
+  let body = '=== Google Classroom 課題期限通知 ===\n\n';
+  body += `以下の課題の提出期限が近づいています。確認してください。\n\n`;
+
+  // 残り日数ごとにソート
+  assignments.sort((a, b) => a.daysRemaining - b.daysRemaining);
+
+  for (const a of assignments) {
+    const dayLabel = a.daysRemaining === 0 ? '【当日】' : `【${a.daysRemaining}日前】`;
+    body += `${dayLabel} ${a.courseName}\n`;
+    body += `  📌 ${a.title}\n`;
+    body += `  📅 期限: ${a.dueDate}\n`;
+    body += `  🔗 Classroom: ${a.alternateLink}\n\n`;
+  }
+
+  body += '---\n';
+  body += `Google Classroom: https://classroom.google.com\n`;
+
+  try {
+    MailApp.sendEmail({
+      to: CONFIG.NOTIFICATION_EMAIL,
+      subject: subject,
+      body: body,
+    });
+    logInfo(`${assignments.length}件の期限通知メールを送信しました`);
+  } catch (error) {
+    logError('期限通知メール送信エラー: ' + error.message);
+  }
+}
