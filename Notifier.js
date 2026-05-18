@@ -66,7 +66,7 @@ function sendNotification(newFiles, stats) {
 function sendDeadlineNotification(assignments) {
   if (assignments.length === 0) return;
 
-  const subject = `⚠️ 期限切迫！未提出の課題があります（${assignments.length}件）`;
+  const subject = `⚠️ 期限間近！未提出の課題があります（${assignments.length}件）`;
 
   let body = '=== Google Classroom 課題期限通知 ===\n\n';
   body += `以下の課題の提出期限が近づいています。確認してください。\n\n`;
