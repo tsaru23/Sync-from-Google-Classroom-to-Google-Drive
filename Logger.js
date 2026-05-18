@@ -95,7 +95,7 @@ function isNotificationSent(courseWorkId, milestone) {
   const data = getNotificationSheet().getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     // 課題IDとタイミングの両方が一致する場合のみ送信済みとする
-    if (data[i][0] === courseWorkId && parseInt(data[i][2]) === milestone) {
+    if (String(data[i][0]) === String(courseWorkId) && parseInt(data[i][2]) === milestone) {
       return true;
     }
   }
